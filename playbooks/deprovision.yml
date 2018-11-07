@@ -1,4 +1,4 @@
-- name: cloud-native-development playbook to deprovision the application
+- name: cloud-native-development-apb playbook to deprovision the application
   hosts: localhost
   gather_facts: false
   connection: local

@@ -1,5 +1,5 @@
 version: '1.0.0'
-name: cloud-native-development
+name: cloud-native-development-apb
 description: APB to deploy required infra components for the Cloud-Native Development on an OpenShift cluster
 bindable: False
 async: optional
