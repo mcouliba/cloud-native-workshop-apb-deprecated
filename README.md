@@ -20,7 +20,7 @@ $ git push
 # Dockerfile
 FROM ansibleplaybookbundle/apb-base
 
-LABEL "com.redhat.apb.spec"="dmVyc2lvbjogMS4wCm5hbWU6IG15LXRlc3QtYXBiCmRlc2NyaXB0aW9uOiBUaGlzIGlzIGEgc2Ft..."
+LABEL "com.redhat.apb.spec"="dmVyc2lvbjogMS4wCm5hbWU6IG15LXRlc3Qt..."
 
 COPY playbooks /opt/apb/actions
 ADD requirements.yml /opt/apb/actions/requirements.yml
@@ -36,10 +36,6 @@ $ oc new-build https://github.com/mcouliba/cloud-native-development-apb \
     -n openshift
 ```
 
-## List
-Querying the ansible service broker will now show your new apb listed.
-```bash
-$ oc get images | grep cloud-native-development-apb
-```
+Visiting the OpenShift console UI will now display the new Ansible Playbook Bundle named "Cloud-Native Development Installer" in the catalog under the **_All_** tab and **_Other_** tab.
 
-Visiting the OpenShift console UI will now display the new Ansible Playbook Bundle named "Cloud Native Development" in the catalog under the **_All_** tab and **_Other_** tab.
+![](images/ocp-console-catalog.png)
