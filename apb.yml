@@ -45,6 +45,14 @@ plans:
       display_type: string
       value: "openshift"
       display_group: Lab Guide
+    - name: github_guide_path
+      title: Github Guide Path
+      description: The Github guide path to the lab guide for participants
+      type: string
+      required: true
+      display_type: string
+      value: "openshift-labs/cloud-native-developer-series-guides/ocp-3.10"
+      display_group: Lab Guide
     - name: infrasvcs_adm_user
       title: Infra Services Admin User
       description: Admin user for infrastructure services (Gogs, Che, ...)
