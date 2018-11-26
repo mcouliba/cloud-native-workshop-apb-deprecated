@@ -116,7 +116,7 @@
       name: openshift_eclipse_che
     vars:
       project_name: "{{ namespace }}"
-      che_version: "latest"
+      che_version: "6.7.1"
       multi_user: true
       route_suffix: "{{ apps_hostname_suffix }}"
       keycloak_admin_user: "{{ infrasvcs_adm_user }}"
