@@ -124,7 +124,7 @@
       install_custom_stacks_json: |
         [{
           "name": "Java Cloud-Native",
-          "description": "Java JDK Stack on CentOS for Cloud-Native Workshop",
+          "description": "Java JDK Stack on CentOS for Cloud-Native Development",
           "scope": "general",
           "workspaceConfig": {
             "environments": {
