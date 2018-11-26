@@ -45,13 +45,21 @@ plans:
       display_type: string
       value: "openshift"
       display_group: Lab Guide
-    - name: github_guide_path
-      title: Github Guide Path
-      description: The Github guide path to the lab guide for participants
+    - name: git_repository_guide_path
+      title: Git Repository Guide Path
+      description: The Path of the repository with the lab guide for participants
       type: string
-      required: true
+      required: false
       display_type: string
-      value: "openshift-labs/cloud-native-developer-series-guides/ocp-3.10"
+      value: "openshift-labs/cloud-native-developer-series-guides"
+      display_group: Lab Guide
+    - name: git_repository_guide_reference
+      title: Git Repository Guide Reference
+      description: Set this to a branch name, tag or other ref of your repository if you are not using the default branch.
+      type: string
+      required: false
+      display_type: string
+      value: "master"
       display_group: Lab Guide
     - name: infrasvcs_adm_user
       title: Infra Services Admin User

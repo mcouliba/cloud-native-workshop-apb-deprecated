@@ -9,7 +9,8 @@
     openshift_master_url: 
     openshift_user_password:
     project_suffix: "-XX"
-    github_guide_path: openshift-labs/cloud-native-developer-series-guides/ocp-3.10
+    git_repository_guide_path: openshift-labs/cloud-native-developer-series-guides
+    git_repository_guide_reference: ocp-3.10
     gogs_dev_user: developer
     gogs_pwd: openshift
     infrasvcs_adm_user: adminuser
@@ -87,8 +88,8 @@
     vars:
       workshopper_name: guides-che
       project_name: "{{ namespace }}"
-      workshopper_content_url_prefix: "https://raw.githubusercontent.com/{{ github_guide_path }}"
-      workshopper_workshop_urls: "https://raw.githubusercontent.com/{{ github_guide_path }}/_cloud-native-workshop-che.yml"
+      workshopper_content_url_prefix: "https://raw.githubusercontent.com/{{ git_repository_guide_path }}/{{ git_repository_guide_reference }}"
+      workshopper_workshop_urls: "https://raw.githubusercontent.com/{{ git_repository_guide_path }}/{{ git_repository_guide_reference }}/_cloud-native-workshop-che.yml"
       workshopper_env_vars:
         PROJECT_SUFFIX: "{{ project_suffix }}"
         COOLSTORE_PROJECT: coolstore{{ project_suffix }}
