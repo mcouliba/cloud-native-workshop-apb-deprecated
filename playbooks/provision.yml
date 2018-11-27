@@ -132,7 +132,7 @@
               "default": {
                 "recipe": {
                   "type": "dockerimage",
-                  "content": "mcouliba/che-cloud-native"
+                  "content": "quay.io/mcouliba/che-cloud-native"
                 },
                 "machines": {
                   "dev-machine": {
