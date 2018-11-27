@@ -47,11 +47,11 @@ plans:
       display_group: Lab Guide
     - name: git_repository_guide_path
       title: Git Repository Guide Path
-      description: The Path of the repository with the lab guide for participants
+      description: The Path of the repository with the lab guide for participants <github_account>/<github_project>
       type: string
       required: false
       display_type: string
-      value: "openshift-labs/cloud-native-developer-series-guides"
+      value: "redhat-developer-adoption-emea/cloud-native-developer-series-guides"
       display_group: Lab Guide
     - name: git_repository_guide_reference
       title: Git Repository Guide Reference

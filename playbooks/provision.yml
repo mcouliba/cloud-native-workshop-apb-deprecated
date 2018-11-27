@@ -9,7 +9,7 @@
     openshift_master_url: 
     openshift_user_password:
     project_suffix: "-XX"
-    git_repository_guide_path: openshift-labs/cloud-native-developer-series-guides
+    git_repository_guide_path: redhat-developer-adoption-emea/cloud-native-developer-series-guides
     git_repository_guide_reference: ocp-3.10
     gogs_dev_user: developer
     gogs_pwd: openshift
