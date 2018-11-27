@@ -116,7 +116,7 @@
       name: openshift_eclipse_che
     vars:
       project_name: "{{ namespace }}"
-      che_version: "6.7.1"
+      che_version: "6.14.2"
       multi_user: true
       route_suffix: "{{ apps_hostname_suffix }}"
       keycloak_admin_user: "{{ infrasvcs_adm_user }}"
@@ -265,6 +265,10 @@
             {
               "version": "3.11",
               "name": "OpenShift CLI"
+            },
+            {
+              "version": "0.0.16",
+              "name": "OpenShift DO"
             }
           ],
           "creator": "ide",
