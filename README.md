@@ -29,7 +29,7 @@ RUN chmod -R g=u /opt/{ansible,apb}
 USER apb
 ```
 
-## Build and Deploy
+## Build and Deploy on Openshift
 ```bash
 $ oc new-build https://github.com/mcouliba/cloud-native-development-apb \
     --name=cloud-native-development-apb \
@@ -39,3 +39,17 @@ $ oc new-build https://github.com/mcouliba/cloud-native-development-apb \
 Visiting the OpenShift console UI will now display the new Ansible Playbook Bundle named "Cloud-Native Development Installer" in the catalog under the **_All_** tab and **_Other_** tab.
 
 ![](images/ocp-console-catalog.png)
+
+Or if you have Ansible installed locally, you can also run the Ansilbe playbooks directly on your machine:
+
+## Build locally
+```
+oc login
+oc new-project lab-infra
+
+ansible-galaxy install -r requirements.yml -f
+ansible-playbook -vvv playbooks/provision.yml \
+       -e namespace=$(oc project -q) \
+       -e openshift_token=$(oc whoami -t) \
+       -e openshift_master_url=$(oc whoami --show-server)
+``` 
