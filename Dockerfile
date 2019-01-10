@@ -4,7 +4,7 @@ LABEL "com.redhat.apb.spec"="dmVyc2lvbjogJzEuMC4wJwpuYW1lOiBjbG91ZC1uYXRpdmUtZGV
 
 # Install PyOpenSSL for generating Self Signed Certificate
 RUN yum update -y && \
-    yum install -y pyopenssl
+    yum install -y pyOpenSSL
 
 COPY playbooks /opt/apb/actions
 ADD requirements.yml /opt/apb/actions/requirements.yml
