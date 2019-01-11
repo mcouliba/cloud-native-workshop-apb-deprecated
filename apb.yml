@@ -50,7 +50,7 @@ plans:
       description: The Path of the repository with the lab guide for participants <github_account>/<github_project>
       type: string
       default: "openshift-labs/cloud-native-guides"
-      required: false
+      required: true
       display_type: string
       value: "redhat-developer-adoption-emea/cloud-native-developer-series-guides"
       display_group: Lab Guide
@@ -59,7 +59,7 @@ plans:
       description: Set this to a branch name, tag or other ref of your repository if you are not using the default branch.
       type: string
       default: "ocp-3.11"
-      required: false
+      required: true
       display_type: string
       value: "master"
       display_group: Lab Guide
