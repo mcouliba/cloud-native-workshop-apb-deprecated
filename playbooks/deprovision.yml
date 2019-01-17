@@ -33,7 +33,7 @@
     command: "oc delete all,cm,secret,pvc,sa -l app={{ item }} -n {{ namespace }}"
     ignore_errors: true
     with_items:
-      - che
+      - codeready
       - gogs
       - nexus
-      - guides-che
+      - guides-codeready
