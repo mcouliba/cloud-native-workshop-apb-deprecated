@@ -1,4 +1,4 @@
-- name: cloud-native-development-apb playbook to provision the application
+- name: cloud-native-workshop-apb playbook to provision the application
   hosts: localhost
   gather_facts: false
   connection: local
@@ -9,8 +9,8 @@
     openshift_master_url: 
     openshift_user_password:
     project_suffix: "-XX"
-    git_repository_guide_path: redhat-developer-adoption-emea/cloud-native-developer-series-guides
-    git_repository_guide_reference: ocp-3.10
+    git_repository_guide_path: openshift-labs/cloud-native-guides
+    git_repository_guide_reference: ocp-3.11
     gogs_dev_user: developer
     gogs_pwd: openshift
     infrasvcs_adm_user: adminuser
@@ -116,4 +116,6 @@
       name: openshift_codeready_workspaces
     vars:
       project_name: "{{ namespace }}"
+      operator_image_name: quay.io/mcouliba/codeready-workspaces-operator
+      operator_image_tag: codeready-1.0-rhel-7
     tags: codeready-workspaces

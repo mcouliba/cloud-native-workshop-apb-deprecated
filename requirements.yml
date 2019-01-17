@@ -11,5 +11,5 @@
   name: openshift_workshopper
 
 - src: mcouliba.openshift_codeready_workspaces
-  version: 1.0.0
+  version: 1.0.0-operator
   name: openshift_codeready_workspaces

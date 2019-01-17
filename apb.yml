@@ -1,19 +1,20 @@
 version: '1.0.0'
-name: cloud-native-development-apb
-description: APB to deploy required infra components for the Cloud-Native Development on an OpenShift cluster
+name: cloud-native-workshop-apb
+description: APB to deploy required infra components for Cloud-Native Workshops on an OpenShift cluster
 bindable: False
 async: optional
 tags:
 - workshop
+- cloud-native
 metadata:
   dependencies: []
-  displayName: "Cloud-Native Development Installer"
-  longDescription: "Required components (Git server, Nexus, Eclipse Che, etc)"
-  console.openshift.io/iconClass: "pficon pficon-process-automation"
+  displayName: "Cloud-Native Workshop (CodeReady) Installer"
+  longDescription: "Required components (CodeReady Workspaces, Nexus, Gogs, Workshopper)"
+  console.openshift.io/iconClass: "pficon pficon-services"
   providerDisplayName: "Red Hat, Inc."
 plans:
   - name: default
-    description: This default plan deploys cloud-native-development
+    description: This default plan deploys cloud-native-workshop
     free: True
     metadata: {}
     parameters:
@@ -22,28 +23,28 @@ plans:
       description: User is required for creating project admin resources
       type: string
       required: true
-      display_group: OpenShift Admin User
+      display_group: OpenShift Master
     - name: openshift_password
       title: Password
       description: Password is required for creating project admin resources
       type: string
       required: true
       display_type: password
-      display_group: OpenShift Admin User
+      display_group: OpenShift Master
     - name: openshift_master_url
       title: OpenShift Master URL
       description: The address to OpenShift master URL to be displayed in the lab guide to participants
       type: string
       required: true
       display_type: string
-      display_group: Lab Guide
+      display_group: OpenShift Master
     - name: openshift_user_password
       title: OpenShift User Password
       description: The OpenShift password for participants to be displayed in the lab guide to participants
       type: string
+      default: "openshift"
       required: true
       display_type: string
-      value: "openshift"
       display_group: Lab Guide
     - name: git_repository_guide_path
       title: Git Repository Guide Path
@@ -52,7 +53,6 @@ plans:
       default: "openshift-labs/cloud-native-guides"
       required: true
       display_type: string
-      value: "redhat-developer-adoption-emea/cloud-native-developer-series-guides"
       display_group: Lab Guide
     - name: git_repository_guide_reference
       title: Git Repository Guide Reference
@@ -61,11 +61,10 @@ plans:
       default: "ocp-3.11"
       required: true
       display_type: string
-      value: "master"
       display_group: Lab Guide
     - name: infrasvcs_adm_user
       title: Infra Services Admin User
-      description: Admin user for infrastructure services (Gogs, Che, ...)
+      description: Admin user for infrastructure services (Gogs, Nexus, ...)
       type: string
       default: "adminuser"
       required: true
@@ -73,7 +72,7 @@ plans:
       display_group: Workshop Infra Services
     - name: infrasvcs_adm_pwd
       title: Infra Services Admin Password
-      description: Admin password for infrastructure services (Gogs, Che, ...)
+      description: Admin password for infrastructure services (Gogs, Nexus, ...)
       type: string
       default: "adminpwd"
       required: true

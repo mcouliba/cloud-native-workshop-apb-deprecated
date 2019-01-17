@@ -9,8 +9,8 @@ by deploying required services (lab instructions, Gogs, Nexus, etc).
 ## Prepare (Only if you change the apb.yml file)
 First update the `com.redhat.apb.spec` LABEL from the Dockerfile file with a base64 encoded version of apb.yml
 ```bash
-$ git clone https://github.com/<your username>/cloud-native-development-apb.git
-$ cd cloud-native-development-apb
+$ git clone https://github.com/<your username>/cloud-native-workshop-apb.git
+$ cd cloud-native-workshop-apb
 $ sed -i '.bak' "s/LABEL \"com.redhat.apb.spec\"=.*/LABEL \"com.redhat.apb.spec\"=\"$(cat apb.yml | base64)\"/g" Dockerfile
 $ git commit
 $ git push
@@ -22,17 +22,17 @@ FROM ansibleplaybookbundle/apb-base
 
 LABEL "com.redhat.apb.spec"="dmVyc2lvbjogMS4wCm5hbWU6IG15LXRlc3Qt..."
 
-COPY playbooks /opt/apb/actions
-ADD requirements.yml /opt/apb/actions/requirements.yml
-RUN ansible-galaxy install -r /opt/apb/actions/requirements.yml -f
+COPY playbooks /opt/apb/project
+ADD requirements.yml /opt/apb/project/requirements.yml
+RUN ansible-galaxy install -r /opt/apb/project/requirements.yml -f
 RUN chmod -R g=u /opt/{ansible,apb}
 USER apb
 ```
 
 ## Build and Deploy on Openshift
 ```bash
-$ oc new-build https://github.com/mcouliba/cloud-native-development-apb \
-    --name=cloud-native-development-apb \
+$ oc new-build https://github.com/<your username>/cloud-native-workshop-apb \
+    --name=cloud-native-workshop-apb \
     -n openshift
 ```
 
