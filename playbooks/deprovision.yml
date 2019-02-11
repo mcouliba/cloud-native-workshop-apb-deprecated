@@ -37,3 +37,10 @@
       - gogs
       - nexus
       - guides-codeready
+  
+  - name: Delete CodeReady Workspaces additional resources from {{ namespace }}
+    command: "oc delete {{ item }} codeready-workspaces-operator -n {{ namespace }}"
+    ignore_errors: true
+    with_items:
+      - serviceaccount
+      - rolebinding

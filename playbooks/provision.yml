@@ -116,6 +116,4 @@
       name: openshift_codeready_workspaces
     vars:
       project_name: "{{ namespace }}"
-      operator_image_name: quay.io/mcouliba/codeready-workspaces-operator
-      operator_image_tag: codeready-1.0-rhel-7
     tags: codeready-workspaces
