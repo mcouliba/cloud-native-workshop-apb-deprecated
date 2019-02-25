@@ -117,3 +117,71 @@
     vars:
       project_name: "{{ namespace }}"
     tags: codeready-workspaces
+  
+  - name: get CodeReady Workspaces URL
+    command: "oc get routes codeready --template={% raw %}'{{ .spec.host }}'{% endraw %} -n {{ namespace }}"
+    register: cmd_result
+    changed_when: true
+
+  - name: init 'codeready_url' variable
+    set_fact:
+      codeready_url: "{{ cmd_result.stdout }}"
+
+  - name: get RHSSO URL
+    command: "oc get routes keycloak --template={% raw %}'{{ .spec.host }}'{% endraw %} -n {{ namespace }}"
+    register: cmd_result
+    changed_when: true
+
+  - name: init 'rhsso_url' variable
+    set_fact:
+      rhsso_url: "{{ cmd_result.stdout }}"
+
+  - name: wait for CodeReady Workspaces to be running
+    uri:
+      url: "http://{{ codeready_url }}/api/system/state"
+      status_code: 200
+    register: result
+    until: result.status == 200
+    retries: 60
+    delay: 30
+
+  - name: get auth token from RHSSO CodeReady realm
+    uri:
+      url: http://{{ rhsso_url }}/auth/realms/codeready/protocol/openid-connect/token
+      method: POST
+      body: "username=admin&password=admin&grant_type=password&client_id=admin-cli"
+      status_code: 200
+      headers:
+        Content-Type: "application/x-www-form-urlencoded"
+    register: codeready_access_token_result
+
+  - name: init 'codeready_access_token_bearer' variable
+    set_fact:
+      codeready_access_token_bearer: "{{ codeready_access_token_result.json | json_query('access_token') }}"
+  
+  - name: add the cloud native stack
+    uri:
+      url: "http://{{ codeready_url }}/api/stack"
+      method: POST
+      body: "{{ lookup('template','cloud-native-stack.json.j2', convert_data=False) }}"
+      status_code: 201
+      body_format: json
+      headers:
+        Authorization: "Bearer {{ codeready_access_token_bearer }}"
+    register: stack_json_result
+
+  - name: init 'stack_id' variable
+    set_fact:
+      stack_id: "{{ stack_json_result.json|json_query('id') }}"
+
+  - name: give all users access to the stack
+    uri:
+      url: "http://{{ codeready_url }}/api/permissions"
+      method: POST
+      body: "{{ lookup('template','stack-permissions.json.j2', convert_data=False) }}"
+      status_code: 204
+      body_format: json
+      headers:
+        Authorization: "Bearer {{ codeready_access_token_bearer }}"
+    vars:
+      stack_id: "{{ stack_id }}"
