@@ -54,7 +54,7 @@ ZWZhdWx0OiAiYWRtaW5wd2QiCiAgICAgIHJlcXVpcmVkOiB0cnVlCiAgICAgIGRpc3BsYXlfdHlw\
 ZTogdGV4dAogICAgICBkaXNwbGF5X2dyb3VwOiBXb3Jrc2hvcCBJbmZyYSBTZXJ2aWNlcw=="
 
 COPY playbooks /opt/apb/project
-COPY templates /opt/apb/project
+COPY templates /opt/apb/project/templates
 ADD requirements.yml /opt/apb/project/requirements.yml
 RUN ansible-galaxy install -r /opt/apb/project/requirements.yml -f
 RUN chmod -R g=u /opt/{ansible,apb}
