@@ -62,6 +62,14 @@ plans:
       required: true
       display_type: string
       display_group: Lab Guide
+    - name: openshift_service_mesh_installation
+      title: Openshift Service Mesh Installation (Istio, Kiali, ...)
+      description: Set this to installation Openshift Service Mesh
+      type: boolean
+      default: false
+      required: true
+      display_type: checkbox
+      display_group: Openshift Service Mesh
     - name: infrasvcs_adm_user
       title: Infra Services Admin User
       description: Admin user for infrastructure services (Gogs, Nexus, ...)

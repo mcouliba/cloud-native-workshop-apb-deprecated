@@ -15,6 +15,7 @@
     gogs_pwd: openshift
     infrasvcs_adm_user: adminuser
     infrasvcs_adm_pwd: adminpwd
+    openshift_service_mesh_installation: false
 
   roles:
   - role: ansible.kubernetes-modules
@@ -185,3 +186,31 @@
         Authorization: "Bearer {{ codeready_access_token_bearer }}"
     vars:
       stack_id: "{{ stack_id }}"
+
+  - name: check if istio-system project exists
+    command: "oc get project istio-system"
+    register: istio_system_project_result
+    ignore_errors: true
+    changed_when: false
+
+  - name: Openshift Service Mesh Installation
+    block:
+      - name: create istio-operator project
+        command: "oc new-project istio-operator"
+        register: res_cmd
+        changed_when: res_cmd.rc == 0
+      - name: create istio-operator project
+        command: >
+          oc new-app -f https://raw.githubusercontent.com/Maistra/openshift-ansible/maistra-0.9/istio/istio_product_operator_template.yaml 
+          --param=OPENSHIFT_ISTIO_MASTER_PUBLIC_URL={{ openshift_master_url }}
+        register: res_cmd
+        changed_when: res_cmd.rc == 0
+      - name: create istio-operator project
+        command: >
+          oc create -f https://raw.githubusercontent.com/Maistra/openshift-ansible/maistra-0.9/istio/cr-kiali.yaml
+          -n istio-operator
+        register: res_cmd
+        changed_when: res_cmd.rc == 0
+    when: 
+      - openshift_service_mesh_installation
+      - istio_system_project_result is failed
