@@ -62,9 +62,9 @@ plans:
       required: true
       display_type: string
       display_group: Lab Guide
-    - name: openshift_service_mesh_installation
-      title: Openshift Service Mesh Installation (Istio, Kiali, ...)
-      description: Set this to installation Openshift Service Mesh
+    - name: local_kiali_installation
+      title: Local Kiali Installation (Only for Openshift Workshop on RHPDS)
+      description: Set this to install Kiali for 'user1-100' (Service Mesh Required)
       type: boolean
       default: false
       required: true

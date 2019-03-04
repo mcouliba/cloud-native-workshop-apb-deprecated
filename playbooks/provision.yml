@@ -16,6 +16,7 @@
     infrasvcs_adm_user: adminuser
     infrasvcs_adm_pwd: adminpwd
     openshift_service_mesh_installation: false
+    local_kiali_installation: false
 
   roles:
   - role: ansible.kubernetes-modules
@@ -193,24 +194,67 @@
     ignore_errors: true
     changed_when: false
 
-  - name: Openshift Service Mesh Installation
+  # install Local Kiali for 100 users
+  - name: Local Kiali Installation
     block:
-      - name: create istio-operator project
-        command: "oc new-project istio-operator"
-        register: res_cmd
-        changed_when: res_cmd.rc == 0
-      - name: create istio-operator project
-        command: >
-          oc new-app -f https://raw.githubusercontent.com/Maistra/openshift-ansible/maistra-0.9/istio/istio_product_operator_template.yaml 
-          --param=OPENSHIFT_ISTIO_MASTER_PUBLIC_URL={{ openshift_master_url }}
-        register: res_cmd
-        changed_when: res_cmd.rc == 0
-      - name: create istio-operator project
-        command: >
-          oc create -f https://raw.githubusercontent.com/Maistra/openshift-ansible/maistra-0.9/istio/cr-kiali.yaml
-          -n istio-operator
-        register: res_cmd
-        changed_when: res_cmd.rc == 0
+      - name: get Jaeger URL
+        command: "oc get route jaeger-query --template={% raw %}'{{ .spec.host }}'{% endraw %} -n istio-system"
+        register: cmd_result
+        changed_when: true
+      - name: init 'jaeger_url' variable
+        set_fact:
+          jaeger_url: "{{ cmd_result.stdout }}"
+      - name: get Grafana URL
+        command: "oc get route grafana --template={% raw %}'{{ .spec.host }}'{% endraw %} -n istio-system"
+        register: cmd_result
+        changed_when: true
+      - name: init 'grafana_url' variable
+        set_fact:
+          grafana_url: "{{ cmd_result.stdout }}"
+      - name: deploy kiali
+        block:
+          - name: check if {{ infra_project_name }} project exists
+            command: "oc get project {{ infra_project_name }}"
+            register: project_result
+            ignore_errors: true
+            changed_when: false
+          - name: create {{ infra_project_name }} project
+            command: >
+                oc new-project {{ infra_project_name }}
+            when: project_result is failed
+          - name: Change Project
+            command: "oc project {{ infra_project_name }}"
+            changed_when: true
+          - name: install kiali
+            command: "bash <(curl -L http://git.io/getLatestKiali)"
+            register: cmd_result
+            changed_when: true
+          - name: grant {{ username }} to view the project {{ infra_project_name }}
+            command: "oc adm policy add-role-to-user view {{ username }} -n {{ infra_project_name }}"
+            register: cmd_result
+            changed_when: true
+          - name: remove the cluster-wide permissions to Kiali
+            command: "oc delete clusterrolebindings kiali -n {{ infra_project_name }}"
+            register: cmd_result
+            changed_when: true
+          - name: reducing permissions to {{ coolstore_project_name }} only
+            command: >
+              oc adm policy add-role-to-user kiali 
+              system:serviceaccount:{{ infra_project_name }}:kiali-service-account 
+              -n {{ coolstore_project_name }}
+            register: cmd_result
+            changed_when: true
+        environment:
+          - NAMESPACE: "{{ infra_project_name }}"
+          - JAEGER_URL: "{{ jaeger_url }}"
+          - GRAFANA_URL: "{{ grafana_url }}"
+          - KIALI_USERNAME: "{{ username }}"
+          - KIALI_PASSPHRASE: "{{ openshift_user_password }}"
+        vars:
+          username: "{{ item }}"
+          infra_project_name: "infra-{{ item }}"
+          coolstore_project_name: "coolstore-{{ item }}"
+        with_sequence: start=1 end=100 format="user%d"
     when: 
-      - openshift_service_mesh_installation
-      - istio_system_project_result is failed
+      - local_kiali_installation
+      - istio_system_project_result is suceeded
