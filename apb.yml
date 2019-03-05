@@ -62,14 +62,6 @@ plans:
       required: true
       display_type: string
       display_group: Lab Guide
-    - name: local_kiali_installation
-      title: Local Kiali Installation (Only for Openshift Workshop on RHPDS)
-      description: Set this to install Kiali for 'user1-100' (Service Mesh Required)
-      type: boolean
-      default: false
-      required: true
-      display_type: checkbox
-      display_group: Openshift Service Mesh
     - name: infrasvcs_adm_user
       title: Infra Services Admin User
       description: Admin user for infrastructure services (Gogs, Nexus, ...)
@@ -86,3 +78,19 @@ plans:
       required: true
       display_type: text
       display_group: Workshop Infra Services
+    - name: initialize_project_permissions
+      title: Initialize project with permissions
+      description: Set this to initialize project with permissions for 'user1-100'
+      type: boolean
+      default: false
+      required: true
+      display_type: checkbox
+      display_group: Openshift Workshop on RHPDS only (user1-100)
+    - name: local_kiali_installation
+      title: Local Kiali Installation
+      description: Set this to install Kiali for 'user1-100' (Service Mesh with Kiali Required)
+      type: boolean
+      default: false
+      required: true
+      display_type: checkbox
+      display_group: Openshift Workshop on RHPDS only (user1-100)

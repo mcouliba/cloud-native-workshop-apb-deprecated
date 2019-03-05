@@ -33,10 +33,13 @@
     command: "oc delete all,cm,secret,pvc,sa -l app={{ item }} -n {{ namespace }}"
     ignore_errors: true
     with_items:
-      - codeready
       - gogs
       - nexus
       - guides-codeready
+      - postgres
+      - keycloak
+      - che
+      - che-operator
   
   - name: Delete CodeReady Workspaces additional resources from {{ namespace }}
     command: "oc delete {{ item }} codeready-workspaces-operator -n {{ namespace }}"
@@ -44,3 +47,15 @@
     with_items:
       - serviceaccount
       - rolebinding
+
+  - name: Delete Local Kiali if existing
+    block:
+      - name: check if {{ infra_project_name }} project exists
+        command: "oc delete project {{ infra_project_name }}"
+        register: project_result
+        ignore_errors: true
+    vars:
+      infra_project_name: "infra-mcouliba"
+    # vars:
+    #   infra_project_name: "infra-{{ item }}"
+    # with_sequence: start=1 end=100 format="user%d"

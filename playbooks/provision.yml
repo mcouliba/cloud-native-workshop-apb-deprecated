@@ -17,6 +17,7 @@
     infrasvcs_adm_pwd: adminpwd
     openshift_service_mesh_installation: false
     local_kiali_installation: false
+    initialize_project_permissions: false
 
   roles:
   - role: ansible.kubernetes-modules
@@ -194,67 +195,94 @@
     ignore_errors: true
     changed_when: false
 
-  # install Local Kiali for 100 users
+  # Initialize Projects with permissions for 100 users
+  - name: Initialize project with permission
+    block:
+      - name: check if {{ project_name }} project exists
+        command: "oc get project {{ project_name }}"
+        register: project_result
+        ignore_errors: true
+      - name: delete {{ project_name }} project
+        command: >
+            oc delete project {{ project_name }}
+        when: project_result is succeeded
+      - name: create {{ project_name }} project
+        command: >
+            oc new-project {{ project_name }}
+      - name: grant {{ username }} to edit the project
+        command: "oc adm policy add-role-to-user edit {{ username }} -n {{ project_name }}"
+      - name: grant applications in the the project to view Openshift API
+        command: "oc policy add-role-to-user view -n {{ project_name }} -z default"
+      - name: grant applications with privileged access (for Istio)
+        command: "oc adm policy add-scc-to-user privileged -z default -n {{ project_name }}"
+      - name: grant applications with anyuid access (for Istio)
+        command: "oc adm policy add-scc-to-user anyuid -z default -n {{ project_name }}"
+    vars:
+      username: "{{ item }}"
+      project_name: "coolstore-{{ item }}"
+    with_sequence: start=1 end=100 format="user%d"
+    when: 
+      - initialize_project_permissions
+
+  # Install Local Kiali for 100 users
   - name: Local Kiali Installation
     block:
       - name: get Jaeger URL
-        command: "oc get route jaeger-query --template={% raw %}'{{ .spec.host }}'{% endraw %} -n istio-system"
-        register: cmd_result
-        changed_when: true
+        command: "oc get route jaeger-query -o 'jsonpath={.spec.host}' -n istio-system"
+        register: jaeger_host
       - name: init 'jaeger_url' variable
         set_fact:
-          jaeger_url: "{{ cmd_result.stdout }}"
+          jaeger_url: "https://{{ jaeger_host.stdout }}"
       - name: get Grafana URL
-        command: "oc get route grafana --template={% raw %}'{{ .spec.host }}'{% endraw %} -n istio-system"
-        register: cmd_result
-        changed_when: true
+        command: "oc get route grafana -o 'jsonpath={.spec.host}' -n istio-system"
+        register: grafana_host
       - name: init 'grafana_url' variable
         set_fact:
-          grafana_url: "{{ cmd_result.stdout }}"
+          grafana_url: "http://{{ grafana_host.stdout }}"
       - name: deploy kiali
         block:
           - name: check if {{ infra_project_name }} project exists
             command: "oc get project {{ infra_project_name }}"
             register: project_result
             ignore_errors: true
-            changed_when: false
+          - name: delete {{ infra_project_name }} project
+            command: >
+                oc delete project {{ infra_project_name }}
+            when: project_result is succeeded
           - name: create {{ infra_project_name }} project
             command: >
                 oc new-project {{ infra_project_name }}
-            when: project_result is failed
-          - name: Change Project
-            command: "oc project {{ infra_project_name }}"
-            changed_when: true
+          - name: grant {{ username }} to edit the project {{ infra_project_name }}
+            command: "oc adm policy add-role-to-user edit {{ username }} -n {{ infra_project_name }}"
+          - name: Create kiali secret
+            command: > 
+              oc create secret generic kiali -n {{ infra_project_name }}  
+              --from-literal=username={{ username }} 
+              --from-literal=passphrase={{ openshift_user_password }}
           - name: install kiali
-            command: "bash <(curl -L http://git.io/getLatestKiali)"
-            register: cmd_result
-            changed_when: true
-          - name: grant {{ username }} to view the project {{ infra_project_name }}
-            command: "oc adm policy add-role-to-user view {{ username }} -n {{ infra_project_name }}"
-            register: cmd_result
-            changed_when: true
-          - name: remove the cluster-wide permissions to Kiali
-            command: "oc delete clusterrolebindings kiali -n {{ infra_project_name }}"
-            register: cmd_result
-            changed_when: true
-          - name: reducing permissions to {{ coolstore_project_name }} only
+            shell: "echo {{ lookup('template', 'kiali.yaml.j2')  | quote }} | oc create -f -"
+          - name: Check kiali route exists
+            command: "oc get route kiali -n {{ infra_project_name }}"
+            register: kiali_route
+            ignore_errors: yes
+          - name: Expose kiali service
+            command: "oc create route reencrypt kiali --service=kiali -n {{ infra_project_name }}"
+            when: kiali_route != 0
+          - name: check if {{ project_name }} project exists
+            command: "oc get project {{ project_name }}"
+            register: project_result
+            ignore_errors: true
+          - name: reducing permissions to {{ project_name }} only
             command: >
               oc adm policy add-role-to-user kiali 
               system:serviceaccount:{{ infra_project_name }}:kiali-service-account 
-              -n {{ coolstore_project_name }}
-            register: cmd_result
-            changed_when: true
-        environment:
-          - NAMESPACE: "{{ infra_project_name }}"
-          - JAEGER_URL: "{{ jaeger_url }}"
-          - GRAFANA_URL: "{{ grafana_url }}"
-          - KIALI_USERNAME: "{{ username }}"
-          - KIALI_PASSPHRASE: "{{ openshift_user_password }}"
+              -n {{ project_name }}
+            when: project_result is succeeded
         vars:
           username: "{{ item }}"
           infra_project_name: "infra-{{ item }}"
-          coolstore_project_name: "coolstore-{{ item }}"
+          project_name: "coolstore-{{ item }}"
         with_sequence: start=1 end=100 format="user%d"
     when: 
       - local_kiali_installation
-      - istio_system_project_result is suceeded
+      - istio_system_project_result is succeeded
