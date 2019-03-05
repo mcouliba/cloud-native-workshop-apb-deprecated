@@ -50,12 +50,10 @@
       - rolebinding
 
   - name: Delete user projects if exists
-    block:
-      - name: Delete user projects
-        command: "oc delete project {{ infra_project_name }} {{ project_name }}"
-        register: project_result
-        ignore_errors: true
+    command: "oc delete project {{ infra_project_name }} {{ project_name }}"
+    register: project_result
+    ignore_errors: true
     vars:
-      infra_project_name: "infra-{{ item }}"
-      project_name: "coolstore-{{ item }}"
-    with_sequence: start=1 end=100 format="user%d"
+      infra_project_name: "infra-{{ 'user%d' | format(item) }}"
+      project_name: "coolstore-{{ 'user%d' | format(item) }}"
+    loop: "{{ range(1, 100 )|list }}"
