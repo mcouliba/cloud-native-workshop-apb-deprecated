@@ -67,6 +67,7 @@ b3Agb24gUkhQRFMgb25seSAodXNlcjEtMTAwKQ=="
 
 COPY playbooks /opt/apb/project
 COPY templates /opt/apb/project/templates
+COPY tasks /opt/apb/project/tasks
 ADD requirements.yml /opt/apb/project/requirements.yml
 RUN ansible-galaxy install -r /opt/apb/project/requirements.yml -f
 RUN chmod -R g=u /opt/{ansible,apb}

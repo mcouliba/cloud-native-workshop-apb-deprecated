@@ -1,0 +1,20 @@
+---
+- name: check if {{ project_name }} project exists
+  command: "oc get project {{ project_name }}"
+  register: project_result
+  ignore_errors: true
+- name: delete {{ project_name }} project
+  command: >
+      oc delete project {{ project_name }}
+  when: project_result is succeeded
+- name: create {{ project_name }} project
+  command: >
+      oc new-project {{ project_name }}
+- name: grant {{ username }} to edit the project
+  command: "oc adm policy add-role-to-user edit {{ username }} -n {{ project_name }}"
+- name: grant applications in the the project to view Openshift API
+  command: "oc policy add-role-to-user view -n {{ project_name }} -z default"
+- name: grant applications with privileged access (for Istio)
+  command: "oc adm policy add-scc-to-user privileged -z default -n {{ project_name }}"
+- name: grant applications with anyuid access (for Istio)
+  command: "oc adm policy add-scc-to-user anyuid -z default -n {{ project_name }}"
