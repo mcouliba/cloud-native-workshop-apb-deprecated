@@ -115,10 +115,21 @@
     tags: jdk
 
   # install CodeReady Workspaces
+  - name: Install Che Plugin Registry
+    command: > 
+      oc new-app -f https://raw.githubusercontent.com/mcouliba/che-plugin-registry/master/openshift/che-plugin-registry.yml \
+      -p IMAGE="quay.io/mcouliba/che-plugin-registry" \
+      -p IMAGE_TAG="latest" \
+      -p PULL_POLICY="IfNotPresent" \
+      -n {{ namespace }}
+  - name: get Che Plugin Registry URL
+    command: "oc get route che-plugin-registry -o 'jsonpath={.spec.host}' -n {{ namespace }}"
+    register: che_plugin_registry_host
   - import_role:
       name: openshift_codeready_workspaces
     vars:
       project_name: "{{ namespace }}"
+      codeready_plugin_registry_url: "http://{{ che_plugin_registry_host.stdout }}"
     tags: codeready-workspaces
   
   - name: get CodeReady Workspaces URL
