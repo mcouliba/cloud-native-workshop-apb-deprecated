@@ -8,7 +8,7 @@
     openshift_token:
     openshift_master_url: 
     openshift_user_password:
-    project_suffix: "-XX"
+    project_suffix: "X"
     git_repository_lab_path: mcouliba/cloud-native-labs
     git_repository_lab_reference: ocp-3.11
     git_repository_guide_path: mcouliba/cloud-native-guides
@@ -98,6 +98,7 @@
       workshopper_env_vars:
         PROJECT_SUFFIX: "{{ project_suffix }}"
         COOLSTORE_PROJECT: coolstore{{ project_suffix }}
+        INFRA_PROJECT: infra{{ project_suffix }}
         OPENSHIFT_CONSOLE_URL: "{{ openshift_master_url }}"
         LABS_GIT_REPO: https://github.com/{{ git_repository_lab_path }}.git#{{ git_repository_lab_reference }}
         LABS_DOWNLOAD_URL: https://github.com/{{ git_repository_lab_path }}/archive/{{ git_repository_lab_reference }}.zip
@@ -105,6 +106,7 @@
         CODEREADY_WORKSPACES_URL: http://codeready-{{ namespace }}.{{ apps_hostname_suffix }}
         GIT_URL: http://gogs-{{ namespace }}.{{ apps_hostname_suffix }}
         NEXUS_URL: http://nexus-{{ namespace }}.{{ apps_hostname_suffix }}
+        KIALI_URL: http://kiali-infra{{ project_suffix }}.{{ apps_hostname_suffix }}
     tags: guides
 
   # install openjdk imagestream
@@ -216,7 +218,7 @@
     include: "{{ playbook_dir }}/tasks/create_project.yml"
     vars:
       username: "{{ 'user%d' | format(item) }}"
-      project_name: "coolstore-{{ 'user%d' | format(item) }}"
+      project_name: "{{ 'coolstore%d' | format(item) }}"
     loop: "{{ range(1, 100 )|list }}"
     when: 
       - initialize_project_permissions
@@ -240,8 +242,8 @@
         include: "{{ playbook_dir }}/tasks/deploy_kiali.yml"
         vars:
           username: "{{ 'user%d' | format(item) }}"
-          infra_project_name: "infra-{{ 'user%d' | format(item) }}"
-          project_name: "coolstore-{{ 'user%d' | format(item) }}"
+          infra_project_name: "{{ 'infra%d' | format(item) }}"
+          project_name: "{{ 'coolstore%d' | format(item) }}"
         loop: "{{ range(1, 100 )|list }}"
     when: 
       - local_kiali_installation
