@@ -107,7 +107,7 @@
         CODEREADY_WORKSPACES_URL: http://codeready-{{ namespace }}.{{ apps_hostname_suffix }}
         GIT_URL: http://gogs-{{ namespace }}.{{ apps_hostname_suffix }}
         NEXUS_URL: http://nexus-{{ namespace }}.{{ apps_hostname_suffix }}
-        KIALI_URL: http://kiali-infra{{ project_suffix }}.{{ apps_hostname_suffix }}
+        KIALI_URL: https://kiali-infra{{ project_suffix }}.{{ apps_hostname_suffix }}
     tags: guides
 
   # install openjdk imagestream
