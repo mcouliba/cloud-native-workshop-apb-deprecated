@@ -45,15 +45,15 @@ plans:
       default: "openshift"
       required: true
       display_type: string
-      display_group: Lab Guide
+      display_group: Labs & Guides
     - name: git_repository_guide_path
       title: Git Repository Guide Path
       description: The Path of the repository with the lab guide for participants <github_account>/<github_project>
       type: string
-      default: "openshift-labs/cloud-native-guides"
+      default: "mcouliba/cloud-native-guides"
       required: true
       display_type: string
-      display_group: Lab Guide
+      display_group: Labs & Guides
     - name: git_repository_guide_reference
       title: Git Repository Guide Reference
       description: Set this to a branch name, tag or other ref of your repository if you are not using the default branch.
@@ -61,7 +61,23 @@ plans:
       default: "ocp-3.11"
       required: true
       display_type: string
-      display_group: Lab Guide
+      display_group: Labs & Guides
+    - name: git_repository_lab_path
+      title: Git Repository Lab Path
+      description: The Path of the repository with the lab for participants <github_account>/<github_project>
+      type: string
+      default: "mcouliba/cloud-native-labs"
+      required: true
+      display_type: string
+      display_group: Labs & Guides
+    - name: git_repository_lab_reference
+      title: Git Repository Lab Reference
+      description: Set this to a branch name, tag or other ref of your repository if you are not using the default branch.
+      type: string
+      default: "ocp-3.11"
+      required: true
+      display_type: string
+      display_group: Labs & Guides
     - name: infrasvcs_adm_user
       title: Infra Services Admin User
       description: Admin user for infrastructure services (Gogs, Nexus, ...)

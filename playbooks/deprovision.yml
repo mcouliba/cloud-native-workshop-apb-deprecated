@@ -36,12 +36,13 @@
       - gogs
       - nexus
       - guides-codeready
-      - postgres
-      - keycloak
-      - che
-      - che-operator
+      - codeready
       - che-plugin-registry
   
+  - name: Delete configmap 'che-operator'
+    command: "oc delete cm che-operator -n {{ namespace }}"
+    ignore_errors: true
+
   - name: Delete CodeReady Workspaces additional resources from {{ namespace }}
     command: "oc delete {{ item }} codeready-workspaces-operator -n {{ namespace }}"
     ignore_errors: true
