@@ -55,6 +55,6 @@
     register: project_result
     ignore_errors: true
     vars:
-      infra_project_name: "infra-{{ 'user%d' | format(item) }}"
-      project_name: "coolstore-{{ 'user%d' | format(item) }}"
+      infra_project_name: "{{ 'infra%d' | format(item) }}"
+      project_name: "{{ 'coolstore%d' | format(item) }}"
     loop: "{{ range(1, 100 )|list }}"
