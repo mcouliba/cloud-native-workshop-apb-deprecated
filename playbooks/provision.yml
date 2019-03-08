@@ -94,7 +94,7 @@
       workshopper_name: guides-codeready
       project_name: "{{ namespace }}"
       workshopper_content_url_prefix: "https://raw.githubusercontent.com/{{ git_repository_guide_path }}/{{ git_repository_guide_reference }}"
-      workshopper_workshop_urls: "https://raw.githubusercontent.com/{{ git_repository_guide_path }}/{{ git_repository_guide_reference }}/_cloud-native-workshop-che.yml"
+      workshopper_workshop_urls: "https://raw.githubusercontent.com/{{ git_repository_guide_path }}/{{ git_repository_guide_reference }}/_cloud-native-workshop-codeready.yml"
       workshopper_env_vars:
         PROJECT_SUFFIX: "{{ project_suffix }}"
         COOLSTORE_PROJECT: coolstore{{ project_suffix }}
