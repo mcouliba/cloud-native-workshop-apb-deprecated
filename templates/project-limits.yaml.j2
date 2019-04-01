@@ -1,0 +1,25 @@
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: "{{ project_name }}-core-resource-limits"
+  namespace: {{ project_name }}
+spec:
+  limits:
+    - default:
+        cpu: 500m
+        memory: 1536Mi
+      defaultRequest:
+        cpu: 500m
+        memory: 1536Mi
+      max:
+        memory: 3Gi
+      min:
+        memory: 1Mi
+      type: Container
+    - max:
+        memory: 6Gi
+      min:
+        memory: 6Mi
+      type: Pod
+
