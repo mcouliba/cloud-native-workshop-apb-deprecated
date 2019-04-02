@@ -96,7 +96,7 @@ plans:
       display_group: Workshop Infra Services
     - name: precreate_codeready_users
       title: Precreate users in CodeReady Workspaces
-      description: Precreate user1-100 for CodeReady Workspaces (RHPDS only)
+      description: Precreate 100 users (user1-100) in CodeReady Workspaces (RHPDS only)
       type: boolean
       default: false
       required: true

@@ -165,17 +165,27 @@
     until: result.status == 200
     retries: 60
     delay: 30
-
+  
   # Precreate user1-100
+  - name: get auth token from RHSSO master realm
+    uri:
+      url: http://{{ rhsso_url }}/auth/realms/master/protocol/openid-connect/token
+      method: POST
+      body: "username=admin&password=admin&grant_type=password&client_id=admin-cli"
+      status_code: 200
+      headers:
+        Content-Type: "application/x-www-form-urlencoded"
+    register: master_access_token_result
+
   - name: pre-create user1-100 in RHSSO
     uri:
-      url: http://{{ rhsso_url }}/auth/admin/realms/che/users
+      url: http://{{ rhsso_url }}/auth/admin/realms/codeready/users
       method: POST
       body: "{{ lookup('template','codeready-user.json.j2') }}"
       body_format: json
       status_code: 201,409
       headers:
-        Authorization: "Bearer {{ master_access_token_bearer }}"
+        Authorization: "Bearer {{ master_access_token_result }}"
         Content-Type: "application/json"
     vars:
       username: "{{ 'user%d' | format(item) }}"
