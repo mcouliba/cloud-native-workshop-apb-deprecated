@@ -94,19 +94,28 @@ plans:
       required: true
       display_type: text
       display_group: Workshop Infra Services
-    - name: initialize_project_permissions
-      title: Initialize project with permissions
-      description: Set this to initialize project with permissions from user1 to user 100
+    - name: precreate_codeready_users
+      title: Precreate users in CodeReady Workspaces
+      description: Precreate user1-100 for CodeReady Workspaces (RHPDS only)
       type: boolean
       default: false
       required: true
       display_type: checkbox
-      display_group: Openshift Workshop on RHPDS only (user1-100)
-    - name: local_kiali_installation
-      title: Local Kiali Installation
-      description: Set this to install Kiali from user1 to user 100 (Service Mesh with Kiali Required)
+      display_group: CodeReady
+    - name: openshift_service_mesh_installation
+      title: Openshift Service Mesh Installation (Istio, Kiali, ...)
+      description: Set this to installation Openshift Service Mesh if not existing
       type: boolean
       default: false
       required: true
       display_type: checkbox
-      display_group: Openshift Workshop on RHPDS only (user1-100)
+      display_group: Openshift Service Mesh
+    - name: preconfigure_service_mesh_projects
+      title: Preconfigure projects for Service Mesh
+      description: Preconfigure projects in order to use Service Mesh out of the box for user1-100 (RHPDS only)
+      type: boolean
+      default: false
+      required: true
+      display_type: checkbox
+      display_group: Openshift Service Mesh
+      

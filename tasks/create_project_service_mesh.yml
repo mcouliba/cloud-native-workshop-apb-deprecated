@@ -1,0 +1,64 @@
+---
+# Create and configuration application project
+- name: check if {{ project_name }} project exists
+  command: "oc get project {{ project_name }}"
+  register: project_result
+  ignore_errors: true
+- name: delete {{ project_name }} project
+  command: >
+      oc delete project {{ project_name }}
+  when: project_result is succeeded
+- name: create {{ project_name }} project
+  command: >
+      oc new-project {{ project_name }}
+- name: grant {{ username }} to edit the project
+  command: "oc adm policy add-role-to-user edit {{ username }} -n {{ project_name }}"
+- name: grant applications in the the project to view Openshift API
+  command: "oc policy add-role-to-user view -n {{ project_name }} -z default"
+- name: grant applications with privileged access (for Istio)
+  command: "oc adm policy add-scc-to-user privileged -z default -n {{ project_name }}"
+- name: grant applications with anyuid access (for Istio)
+  command: "oc adm policy add-scc-to-user anyuid -z default -n {{ project_name }}"
+- name: update limit range
+  shell: "echo {{ lookup('template', 'project-limits.yaml.j2')  | quote }} | oc replace -f -"
+
+# Create and configuration infra project
+- name: check if {{ infra_project_name }} project exists
+  command: "oc get project {{ infra_project_name }}"
+  register: infra_project_result
+  ignore_errors: true
+- name: delete {{ infra_project_name }} project
+  command: >
+      oc delete project {{ infra_project_name }}
+  when: infra_project_result is succeeded
+- name: create {{ infra_project_name }} project
+  command: >
+      oc new-project {{ infra_project_name }}
+- name: grant {{ username }} to edit the project {{ infra_project_name }}
+  command: "oc adm policy add-role-to-user edit {{ username }} -n {{ infra_project_name }}"
+
+# Install local instance of Kiali
+- name: Create kiali secret
+  command: > 
+    oc create secret generic kiali -n {{ infra_project_name }}  
+    --from-literal=username={{ username }} 
+    --from-literal=passphrase={{ openshift_user_password }}
+- name: install kiali
+  shell: "echo {{ lookup('template', 'kiali.yaml.j2')  | quote }} | oc create -f -"
+- name: Check kiali route exists
+  command: "oc get route kiali -n {{ infra_project_name }}"
+  register: kiali_route
+  ignore_errors: yes
+- name: Expose kiali service
+  command: "oc create route reencrypt kiali --service=kiali -n {{ infra_project_name }}"
+  when: kiali_route != 0
+- name: reducing kiali permissions to {{ project_name }} only
+  command: >
+    oc adm policy add-role-to-user kiali 
+    system:serviceaccount:{{ infra_project_name }}:kiali-service-account 
+    -n {{ project_name }}
+- name: grant kiali to view istio-system project
+  command: >
+    oc adm policy add-role-to-user view 
+    system:serviceaccount:{{ infra_project_name }}:kiali-service-account 
+    -n istio-system

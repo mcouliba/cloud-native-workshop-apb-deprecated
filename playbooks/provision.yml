@@ -7,7 +7,7 @@
     openshift_password: 
     openshift_token:
     openshift_master_url: 
-    openshift_user_password:
+    openshift_user_password: openshift
     project_suffix: "X"
     git_repository_lab_path: mcouliba/cloud-native-labs
     git_repository_lab_reference: ocp-3.11
@@ -18,8 +18,7 @@
     infrasvcs_adm_user: adminuser
     infrasvcs_adm_pwd: adminpwd
     openshift_service_mesh_installation: false
-    local_kiali_installation: false
-    initialize_project_permissions: false
+    preconfigure_service_mesh_projects: false
 
   roles:
   - role: ansible.kubernetes-modules
@@ -167,85 +166,85 @@
     retries: 60
     delay: 30
 
-  - name: get auth token from RHSSO CodeReady realm
+  # Precreate user1-100
+  - name: pre-create user1-100 in RHSSO
     uri:
-      url: http://{{ rhsso_url }}/auth/realms/codeready/protocol/openid-connect/token
+      url: http://{{ rhsso_url }}/auth/admin/realms/che/users
       method: POST
-      body: "username=admin&password=admin&grant_type=password&client_id=admin-cli"
-      status_code: 200
-      headers:
-        Content-Type: "application/x-www-form-urlencoded"
-    register: codeready_access_token_result
-
-  - name: init 'codeready_access_token_bearer' variable
-    set_fact:
-      codeready_access_token_bearer: "{{ codeready_access_token_result.json | json_query('access_token') }}"
-  
-  - name: add the cloud native stack
-    uri:
-      url: "http://{{ codeready_url }}/api/stack"
-      method: POST
-      body: "{{ lookup('template','cloud-native-stack.json.j2', convert_data=False) }}"
-      status_code: 201
+      body: "{{ lookup('template','codeready-user.json.j2') }}"
       body_format: json
+      status_code: 201,409
       headers:
-        Authorization: "Bearer {{ codeready_access_token_bearer }}"
-    register: stack_json_result
-
-  - name: init 'stack_id' variable
-    set_fact:
-      stack_id: "{{ stack_json_result.json|json_query('id') }}"
-
-  - name: give all users access to the stack
-    uri:
-      url: "http://{{ codeready_url }}/api/permissions"
-      method: POST
-      body: "{{ lookup('template','stack-permissions.json.j2', convert_data=False) }}"
-      status_code: 204
-      body_format: json
-      headers:
-        Authorization: "Bearer {{ codeready_access_token_bearer }}"
+        Authorization: "Bearer {{ master_access_token_bearer }}"
+        Content-Type: "application/json"
     vars:
-      stack_id: "{{ stack_id }}"
+      username: "{{ 'user%d' | format(item) }}"
+      first_name: "{{ 'firstname%d' | format(item) }}"
+      last_name: "{{ 'lastname%d' | format(item) }}"
+      email: "{{ 'user%d' | format(item) }}@none.com"
+      password: "{{ openshift_user_password }}"
+    loop: "{{ range(1, 101)|list }}"
+    when: 
+      - precreate_codeready_users
 
+  # Import custom stacks
+  - name: Import custom stacks
+    include: "{{ playbook_dir }}/tasks/add_custom_stack.yml"
+    vars:
+      stack_template: "{{ item }}"
+    with_fileglob:
+    - "../templates/stacks/*-stack.json.j2"
+
+  # Install Service Mesh
   - name: check if istio-system project exists
     command: "oc get project istio-system"
     register: istio_system_project_result
     ignore_errors: true
     changed_when: false
+  - name: Openshift Service Mesh Installation
+    block:
+      - name: create istio-operator project
+        command: "oc new-project istio-operator"
+        register: res_cmd
+        changed_when: res_cmd.rc == 0
+      - name: deploy istio operator
+        command: >
+          oc new-app -n istio-operator
+          -f https://raw.githubusercontent.com/Maistra/openshift-ansible/maistra-0.9/istio/istio_product_operator_template.yaml 
+          --param=OPENSHIFT_ISTIO_MASTER_PUBLIC_URL={{ openshift_master_url }}
+        register: res_cmd
+        changed_when: res_cmd.rc == 0
+      - name: deploy istio with Kiali
+        command: >
+          oc create -n istio-operator
+          -f https://raw.githubusercontent.com/Maistra/openshift-ansible/maistra-0.9/istio/istio-installation-kiali.yaml
+        register: res_cmd
+        changed_when: res_cmd.rc == 0
+    when: 
+      - istio_system_project_result is failed
+      - openshift_service_mesh_installation or preconfigure_service_mesh_projects
 
-  # Initialize Projects with permissions for 100 users
-  - name: Initialize project with permission
-    include: "{{ playbook_dir }}/tasks/create_project.yml"
+  # Get Jaeger and Grafana URL
+  - name: get Jaeger URL
+    command: "oc get route jaeger-query -o 'jsonpath={.spec.host}' -n istio-system"
+    register: jaeger_host
+  - name: init 'jaeger_url' variable
+    set_fact:
+      jaeger_url: "https://{{ jaeger_host.stdout }}"
+  - name: get Grafana URL
+    command: "oc get route grafana -o 'jsonpath={.spec.host}' -n istio-system"
+    register: grafana_host
+  - name: init 'grafana_url' variable
+    set_fact:
+      grafana_url: "http://{{ grafana_host.stdout }}"
+
+  # Preconfigure Projects for Service Mesh usage for 100 users
+  - name: preconfigure projects for service mesh
+    include: "{{ playbook_dir }}/tasks/create_project_service_mesh.yml"
     vars:
       username: "{{ 'user%d' | format(item) }}"
       project_name: "{{ 'coolstore%d' | format(item) }}"
-    loop: "{{ range(1, 100 )|list }}"
+      infra_project_name: "{{ 'infra%d' | format(item) }}"
+    loop: "{{ range(1, 101)|list }}"
     when: 
-      - initialize_project_permissions
-
-  # Install Local Kiali for 100 users
-  - name: Local Kiali Installation
-    block:
-      - name: get Jaeger URL
-        command: "oc get route jaeger-query -o 'jsonpath={.spec.host}' -n istio-system"
-        register: jaeger_host
-      - name: init 'jaeger_url' variable
-        set_fact:
-          jaeger_url: "https://{{ jaeger_host.stdout }}"
-      - name: get Grafana URL
-        command: "oc get route grafana -o 'jsonpath={.spec.host}' -n istio-system"
-        register: grafana_host
-      - name: init 'grafana_url' variable
-        set_fact:
-          grafana_url: "http://{{ grafana_host.stdout }}"
-      - name: deploy kiali
-        include: "{{ playbook_dir }}/tasks/deploy_kiali.yml"
-        vars:
-          username: "{{ 'user%d' | format(item) }}"
-          infra_project_name: "{{ 'infra%d' | format(item) }}"
-          project_name: "{{ 'coolstore%d' | format(item) }}"
-        loop: "{{ range(1, 100 )|list }}"
-    when: 
-      - local_kiali_installation
-      - istio_system_project_result is succeeded
+      - preconfigure_service_mesh_projects
