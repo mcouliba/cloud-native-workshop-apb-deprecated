@@ -238,12 +238,18 @@
   - name: get Jaeger URL
     command: "oc get route jaeger-query -o 'jsonpath={.spec.host}' -n istio-system"
     register: jaeger_host
+    until: result.rc == 0
+    retries: 60
+    delay: 30
   - name: init 'jaeger_url' variable
     set_fact:
       jaeger_url: "https://{{ jaeger_host.stdout }}"
   - name: get Grafana URL
     command: "oc get route grafana -o 'jsonpath={.spec.host}' -n istio-system"
     register: grafana_host
+    until: result.rc == 0
+    retries: 60
+    delay: 30
   - name: init 'grafana_url' variable
     set_fact:
       grafana_url: "http://{{ grafana_host.stdout }}"
