@@ -238,7 +238,7 @@
   - name: get Jaeger URL
     command: "oc get route jaeger-query -o 'jsonpath={.spec.host}' -n istio-system"
     register: jaeger_host
-    until: result.rc == 0
+    until: jaeger_host.rc == 0
     retries: 60
     delay: 30
   - name: init 'jaeger_url' variable
@@ -247,7 +247,7 @@
   - name: get Grafana URL
     command: "oc get route grafana -o 'jsonpath={.spec.host}' -n istio-system"
     register: grafana_host
-    until: result.rc == 0
+    until: grafana_host.rc == 0
     retries: 60
     delay: 30
   - name: init 'grafana_url' variable
