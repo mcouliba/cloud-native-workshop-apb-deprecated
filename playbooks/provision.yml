@@ -177,6 +177,10 @@
         Content-Type: "application/x-www-form-urlencoded"
     register: master_access_token_result
 
+  - name: init 'master_access_token_bearer' variable
+    set_fact:
+      master_access_token_bearer: "{{ master_access_token_result.json | json_query('access_token') }}"
+
   - name: pre-create user1-100 in RHSSO
     uri:
       url: http://{{ rhsso_url }}/auth/admin/realms/codeready/users
@@ -185,7 +189,7 @@
       body_format: json
       status_code: 201,409
       headers:
-        Authorization: "Bearer {{ master_access_token_result }}"
+        Authorization: "Bearer {{ master_access_token_bearer }}"
         Content-Type: "application/json"
     vars:
       username: "{{ 'user%d' | format(item) }}"
