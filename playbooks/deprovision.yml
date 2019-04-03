@@ -50,7 +50,7 @@
       - serviceaccount
       - rolebinding
 
-  - name: Delete user projects if exists
+  - name: Delete projects if exists
     command: "oc delete project {{ infra_project_name }} {{ project_name }}"
     register: project_result
     ignore_errors: true

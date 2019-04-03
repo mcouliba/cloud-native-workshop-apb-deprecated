@@ -32,7 +32,7 @@
   uri:
     url: "http://{{ codeready_url }}/api/permissions"
     method: POST
-    body: "{{ lookup('template','stacks/stack-permissions.json.j2', convert_data=False) }}"
+    body: "{{ lookup('template','{{ playbook_dir }}/../templates/stacks/stack-permissions.json.j2', convert_data=False) }}"
     status_code: 204
     body_format: json
     headers:
