@@ -34,7 +34,7 @@
     },
     "commands": [
     {
-      "commandLine": "username=${workspace.namespace}\nprojectname=coolstore${username#user}\nyes | oc login ${OPENSHIFT_CONSOLE_URL} -u ${username} -p openshift\noc project ${projectname}\necho \"-----------\"\necho \"Successful Connected to OpenShift as ${username}\"\necho \"-----------\"",
+      "commandLine": "username=${workspace.namespace}\nprojectname=coolstore${username#user}\noc login ${OPENSHIFT_CONSOLE_URL} -u ${username} -p openshift --insecure-skip-tls-verify\noc project ${projectname}\necho \"-----------\"\necho \"Successful Connected to OpenShift as ${username}\"\necho \"-----------\"",
       "name": "oc login",
       "attributes": {
         "goal": "OpenShift",
@@ -43,7 +43,7 @@
       "type": "custom"
     },
     {
-      "commandLine": "oc create -f https://raw.githubusercontent.com/dwojciec/debugging-lab-summit-2019/master/openshift/coolstore.yml?token=ATdCO8U1q7K5dgv_ZxfkkmOHG0keO2KXks5coldzwA%3D%3D && \\\noc start-build catalog-s2i --from-dir /projects/labs/catalog-spring-boot/ && \\\noc start-build inventory-s2i --from-dir /projects/labs/inventory-thorntail/ --follow && \\\noc start-build gateway-s2i --from-dir /projects/labs/gateway-vertx/ && \\\noc start-build web --from-dir /projects/labs/web-nodejs/",
+      "commandLine": "oc create -f https://raw.githubusercontent.com/dwojciec/debugging-lab-summit-2019/master/openshift/coolstore.yml && \\\noc start-build catalog-s2i --from-dir /projects/labs/catalog-spring-boot/ && \\\noc start-build inventory-s2i --from-dir /projects/labs/inventory-thorntail/ --follow && \\\noc start-build gateway-s2i --from-dir /projects/labs/gateway-vertx/ && \\\noc start-build web --from-dir /projects/labs/web-nodejs/",
       "name": "Build Mysterious Application",
       "attributes": {
         "goal": "Build"
