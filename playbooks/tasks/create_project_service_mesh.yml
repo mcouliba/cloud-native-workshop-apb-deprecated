@@ -20,7 +20,7 @@
 - name: grant applications with anyuid access (for Istio)
   command: "oc adm policy add-scc-to-user anyuid -z default -n {{ project_name }}"
 - name: update limit range
-  shell: "echo {{ lookup('template', '{{ playbook_dir }}/../templates/project-limits.yaml.j2')  | quote }} | oc replace -f -"
+  shell: "echo {{ lookup('template', '{{ playbook_dir }}/templates/project-limits.yaml.j2')  | quote }} | oc replace -f -"
 
 # Create and configuration infra project
 - name: check if {{ infra_project_name }} project exists
@@ -44,7 +44,7 @@
     --from-literal=username={{ username }} 
     --from-literal=passphrase={{ openshift_user_password }}
 - name: install kiali
-  shell: "echo {{ lookup('template', '{{ playbook_dir }}/../templates/kiali.yaml.j2')  | quote }} | oc create -f -"
+  shell: "echo {{ lookup('template', '{{ playbook_dir }}/templates/kiali.yaml.j2')  | quote }} | oc create -f -"
 - name: Check kiali route exists
   command: "oc get route kiali -n {{ infra_project_name }}"
   register: kiali_route

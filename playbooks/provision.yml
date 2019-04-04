@@ -186,7 +186,7 @@
     uri:
       url: http://{{ rhsso_url }}/auth/admin/realms/codeready/users
       method: POST
-      body: "{{ lookup('template','{{ playbook_dir }}/../templates/codeready-user.json.j2') }}"
+      body: "{{ lookup('template','{{ playbook_dir }}/templates/codeready-user.json.j2') }}"
       body_format: json
       status_code: 201,409
       headers:
@@ -204,11 +204,11 @@
 
   # Import custom stacks
   - name: Import custom stacks
-    include: "{{ playbook_dir }}/../tasks/add_custom_stack.yml"
+    include: "{{ playbook_dir }}/tasks/add_custom_stack.yml"
     vars:
       stack_template: "{{ item }}"
     with_fileglob:
-    - "{{ playbook_dir }}/../templates/stacks/*-stack.json.j2"
+    - "{{ playbook_dir }}/templates/stacks/*-stack.json.j2"
 
   # Install Service Mesh
   - name: check if istio-system project exists
@@ -261,7 +261,7 @@
 
   # Preconfigure Projects for Service Mesh usage for 100 users
   - name: preconfigure projects for service mesh
-    include: "{{ playbook_dir }}/../tasks/create_project_service_mesh.yml"
+    include: "{{ playbook_dir }}/tasks/create_project_service_mesh.yml"
     vars:
       username: "{{ 'user%d' | format(item) }}"
       project_name: "{{ 'coolstore%d' | format(item) }}"
