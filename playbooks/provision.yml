@@ -13,6 +13,7 @@
     git_repository_lab_reference: ocp-3.11
     git_repository_guide_path: mcouliba/cloud-native-guides
     git_repository_guide_reference: ocp-3.11
+    guide_name: codeready
     gogs_dev_user: developer
     gogs_pwd: openshift
     infrasvcs_adm_user: adminuser
@@ -94,7 +95,7 @@
       workshopper_name: guides-codeready
       project_name: "{{ namespace }}"
       workshopper_content_url_prefix: "https://raw.githubusercontent.com/{{ git_repository_guide_path }}/{{ git_repository_guide_reference }}"
-      workshopper_workshop_urls: "https://raw.githubusercontent.com/{{ git_repository_guide_path }}/{{ git_repository_guide_reference }}/_cloud-native-workshop-codeready.yml"
+      workshopper_workshop_urls: "https://raw.githubusercontent.com/{{ git_repository_guide_path }}/{{ git_repository_guide_reference }}/_cloud-native-workshop-{{guide_name}}.yml"
       workshopper_env_vars:
         PROJECT_SUFFIX: "{{ project_suffix }}"
         COOLSTORE_PROJECT: coolstore{{ project_suffix }}
@@ -104,10 +105,12 @@
         LABS_GIT_REPO: https://github.com/{{ git_repository_lab_path }}.git#{{ git_repository_lab_reference }}
         LABS_DOWNLOAD_URL: https://github.com/{{ git_repository_lab_path }}/archive/{{ git_repository_lab_reference }}.zip
         WEB_NODEJS_GIT_REPO: https://github.com/{{ git_repository_lab_path }}/tree/{{ git_repository_lab_reference }}/web-nodejs
+        CATALOG_GO_GIT_REPO: https://github.com/{{ git_repository_lab_path }}/tree/{{ git_repository_lab_reference }}/catalog-go
         CODEREADY_WORKSPACES_URL: http://codeready-{{ namespace }}.{{ apps_hostname_suffix }}
         GIT_URL: http://gogs-{{ namespace }}.{{ apps_hostname_suffix }}
         NEXUS_URL: http://nexus-{{ namespace }}.{{ apps_hostname_suffix }}
         KIALI_URL: https://kiali-infra{{ project_suffix }}.{{ apps_hostname_suffix }}
+        JAEGER_URL: https://jaeger-query-istio-system.{{ apps_hostname_suffix }}
     tags: guides
 
   # install openjdk imagestream

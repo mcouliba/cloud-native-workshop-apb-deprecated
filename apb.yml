@@ -37,7 +37,7 @@ plans:
       type: string
       required: true
       display_type: string
-      display_group: OpenShift Master
+      display_group: Labs & Guides
     - name: openshift_user_password
       title: OpenShift User Password
       description: The OpenShift password for participants to be displayed in the lab guide to participants
@@ -59,6 +59,14 @@ plans:
       description: Set this to a branch name, tag or other ref of your repository if you are not using the default branch.
       type: string
       default: "ocp-3.11"
+      required: true
+      display_type: string
+      display_group: Labs & Guides
+    - name: guide_name
+      title: Guide Name
+      description: Set the name of the guide for _cloud-native-workshop-<guide_name>.yml
+      type: string
+      default: "codeready"
       required: true
       display_type: string
       display_group: Labs & Guides
