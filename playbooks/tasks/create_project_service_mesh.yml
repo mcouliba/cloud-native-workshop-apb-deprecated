@@ -12,7 +12,7 @@
   command: >
       oc new-project {{ project_name }}
 - name: grant {{ username }} to edit the project
-  command: "oc adm policy add-role-to-user edit {{ username }} -n {{ project_name }}"
+  command: "oc adm policy add-role-to-user admin {{ username }} -n {{ project_name }}"
 - name: grant applications in the the project to view Openshift API
   command: "oc policy add-role-to-user view -n {{ project_name }} -z default"
 - name: grant applications with privileged access (for Istio)

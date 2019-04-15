@@ -197,8 +197,6 @@
         Content-Type: "application/json"
     vars:
       username: "{{ 'user%d' | format(item) }}"
-      first_name: "{{ 'firstname%d' | format(item) }}"
-      last_name: "{{ 'lastname%d' | format(item) }}"
       email: "{{ 'user%d' | format(item) }}@none.com"
       password: "{{ openshift_user_password }}"
     loop: "{{ range(1, 101)|list }}"
