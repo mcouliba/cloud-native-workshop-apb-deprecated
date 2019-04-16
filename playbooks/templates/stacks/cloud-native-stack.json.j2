@@ -108,7 +108,7 @@
         }
       },
       {
-        "commandLine": "username=${workspace.namespace}\nprojectname=coolstore${username#user}\n/projects/labs/scripts/runGatewayService.sh ${projectname}",
+        "commandLine": "username=${workspace.namespace}\nprojectname=coolstore${username#user}\nchmod +x /projects/labs/scripts/runGatewayService.sh\n/projects/labs/scripts/runGatewayService.sh ${projectname}",
         "name": "runGatewayService",
         "attributes": {
           "goal": "Run",
