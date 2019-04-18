@@ -42,24 +42,14 @@
       openshift_token is not defined or
       openshift_token is none or
       openshift_token|trim() == ""
-    tags: always  
-          
-  - name: extract app route suffix
+    tags: always
+
+  - name: extract app route suffix from openshift-console
     block:
-      - openshift_v1_route:
-          name: dummy
-          namespace: "{{ namespace }}"
-          state: present
-          spec_to_kind: Service
-          spec_to_name: dummy
-          spec_port_target_port: 8080
-        register: dummy_route
+      - shell: "oc get route console -n openshift-console -o 'jsonpath={.spec.host}'"
+        register: console_route
       - set_fact:
-          apps_hostname_suffix: "{{ dummy_route.route.spec.host|regex_replace('^dummy-' + namespace + '\\.(.*)$', '\\1') }}"
-      - openshift_v1_route:
-          name: dummy
-          namespace: "{{ namespace }}"
-          state: absent
+          apps_hostname_suffix: "{{ console_route.stdout |regex_replace('^console\\.(.*)$', '\\1') }}"
     tags: always
 
   - name: delete project quota
@@ -199,7 +189,7 @@
       username: "{{ 'user%d' | format(item) }}"
       email: "{{ 'user%d' | format(item) }}@none.com"
       password: "{{ openshift_user_password }}"
-    loop: "{{ range(1, 101)|list }}"
+    loop: "{{ range(1, 40)|list }}"
     when: 
       - precreate_codeready_users
 
@@ -267,6 +257,6 @@
       username: "{{ 'user%d' | format(item) }}"
       project_name: "{{ 'coolstore%d' | format(item) }}"
       infra_project_name: "{{ 'infra%d' | format(item) }}"
-    loop: "{{ range(1, 101)|list }}"
+    loop: "{{ range(1, 40)|list }}"
     when: 
       - preconfigure_service_mesh_projects
