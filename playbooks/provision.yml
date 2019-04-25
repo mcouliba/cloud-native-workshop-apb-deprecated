@@ -13,14 +13,17 @@
     git_repository_lab_reference: ocp-3.11
     git_repository_guide_path: mcouliba/cloud-native-guides
     git_repository_guide_reference: ocp-3.11
+    git_repository_guide_context:
     guide_name: codeready
     gogs_dev_user: developer
     gogs_pwd: openshift
     infrasvcs_adm_user: adminuser
     infrasvcs_adm_pwd: adminpwd
+    user_count: 50
     precreate_codeready_users: false
     openshift_service_mesh_installation: false
     preconfigure_service_mesh_projects: false
+    preconfigure_squash: false
 
   roles:
   - role: ansible.kubernetes-modules
@@ -57,6 +60,11 @@
     ignore_errors: true
     tags: always
 
+  # Etherpad
+  - name: install etherpad
+    include: "{{ playbook_dir }}/tasks/install_etherpad.yml"
+    tags: etherpad
+
   - import_role:
       name: openshift_sonatype_nexus
     vars:
@@ -84,8 +92,8 @@
     vars:
       workshopper_name: guides-codeready
       project_name: "{{ namespace }}"
-      workshopper_content_url_prefix: "https://raw.githubusercontent.com/{{ git_repository_guide_path }}/{{ git_repository_guide_reference }}"
-      workshopper_workshop_urls: "https://raw.githubusercontent.com/{{ git_repository_guide_path }}/{{ git_repository_guide_reference }}/_cloud-native-workshop-{{guide_name}}.yml"
+      workshopper_content_url_prefix: "https://raw.githubusercontent.com/{{ git_repository_guide_path }}/{{ git_repository_guide_reference }}/{{ git_repository_guide_context }}"
+      workshopper_workshop_urls: "https://raw.githubusercontent.com/{{ git_repository_guide_path }}/{{ git_repository_guide_reference }}/{{ git_repository_guide_context }}/_cloud-native-workshop-{{guide_name}}.yml"
       workshopper_env_vars:
         PROJECT_SUFFIX: "{{ project_suffix }}"
         COOLSTORE_PROJECT: coolstore{{ project_suffix }}
@@ -160,7 +168,7 @@
     retries: 60
     delay: 30
   
-  # Precreate user1-100
+  # Precreate users
   - name: get auth token from RHSSO master realm
     uri:
       url: http://{{ rhsso_url }}/auth/realms/master/protocol/openid-connect/token
@@ -175,7 +183,7 @@
     set_fact:
       master_access_token_bearer: "{{ master_access_token_result.json | json_query('access_token') }}"
 
-  - name: pre-create user1-100 in RHSSO
+  - name: pre-create users in RHSSO
     uri:
       url: http://{{ rhsso_url }}/auth/admin/realms/codeready/users
       method: POST
@@ -189,7 +197,7 @@
       username: "{{ 'user%d' | format(item) }}"
       email: "{{ 'user%d' | format(item) }}@none.com"
       password: "{{ openshift_user_password }}"
-    loop: "{{ range(1, 40)|list }}"
+    loop: "{{ range(1, user_count|int + 1)|list }}"
     when: 
       - precreate_codeready_users
 
@@ -250,13 +258,22 @@
     set_fact:
       grafana_url: "http://{{ grafana_host.stdout }}"
 
-  # Preconfigure Projects for Service Mesh usage for 100 users
+  # Preconfigure Projects for Service Mesh usage
   - name: preconfigure projects for service mesh
     include: "{{ playbook_dir }}/tasks/create_project_service_mesh.yml"
     vars:
       username: "{{ 'user%d' | format(item) }}"
       project_name: "{{ 'coolstore%d' | format(item) }}"
       infra_project_name: "{{ 'infra%d' | format(item) }}"
-    loop: "{{ range(1, 40)|list }}"
+    loop: "{{ range(1, user_count|int + 1) | list }}"
     when: 
       - preconfigure_service_mesh_projects
+  
+  # Preconfigure cluster for Squash
+  - name: preconfigure cluster for Squash
+    command: >
+      oc create clusterrolebinding cluster-admin-binding-debug-1 \ 
+      --clusterrole=cluster-admin \
+      --user=system:serviceaccount:lab-infra:che-workspace
+    when: 
+      - preconfigure_squash

@@ -73,6 +73,7 @@ ansible-playbook -vvv playbooks/provision.yml \
     -e gogs_pwd=openshift \
     -e infrasvcs_adm_user=adminuser \
     -e infrasvcs_adm_pwd=adminpwd \
+    -e user_count=50 \
     -e precreate_codeready_users=false \
     -e openshift_service_mesh_installation=false \
     -e preconfigure_service_mesh_projects=false
