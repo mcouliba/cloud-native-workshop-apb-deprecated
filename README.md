@@ -63,7 +63,6 @@ ansible-playbook -vvv playbooks/provision.yml \
     -e openshift_token=$(oc whoami -t) \
     -e openshift_master_url=$(oc whoami --show-server) \
     -e openshift_user_password=openshift \
-    -e project_suffix=X \
     -e git_repository_lab_path=mcouliba/cloud-native-labs \
     -e git_repository_lab_reference=ocp-3.11 \
     -e git_repository_guide_path=mcouliba/cloud-native-guides \

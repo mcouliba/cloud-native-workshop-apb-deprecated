@@ -8,7 +8,6 @@
     openshift_token:
     openshift_master_url: 
     openshift_user_password: openshift
-    project_suffix: "X"
     git_repository_lab_path: mcouliba/cloud-native-labs
     git_repository_lab_reference: ocp-3.11
     git_repository_guide_path: mcouliba/cloud-native-guides
@@ -84,35 +83,6 @@
       gogs_user: "{{ gogs_dev_user }}"
       gogs_password: "{{ gogs_pwd }}"
     tags: gogs
-
-  # deploy guides
-  - import_role:
-      name: openshift_workshopper
-      allow_duplicates: true
-    vars:
-      workshopper_name: guides-codeready
-      project_name: "{{ namespace }}"
-      workshopper_content_url_prefix: "https://raw.githubusercontent.com/{{ git_repository_guide_path }}/{{ git_repository_guide_reference }}/{{ git_repository_guide_context }}"
-      workshopper_workshop_urls: "https://raw.githubusercontent.com/{{ git_repository_guide_path }}/{{ git_repository_guide_reference }}/{{ git_repository_guide_context }}/_cloud-native-workshop-{{guide_name}}.yml"
-      workshopper_env_vars:
-        PROJECT_SUFFIX: "{{ project_suffix }}"
-        COOLSTORE_PROJECT: coolstore{{ project_suffix }}
-        INFRA_PROJECT: infra{{ project_suffix }}
-        OPENSHIFT_CONSOLE_URL: "{{ openshift_master_url }}"
-        OPENSHIFT_USER: "user{{ project_suffix }}"
-        OPENSHIFT_PASSWORD: "{{ openshift_user_password }}" 
-        APPS_HOSTNAME_SUFFIX: "{{ apps_hostname_suffix }}"
-        LABS_GIT_REPO: https://github.com/{{ git_repository_lab_path }}.git#{{ git_repository_lab_reference }}
-        LABS_DOWNLOAD_URL: https://github.com/{{ git_repository_lab_path }}/archive/{{ git_repository_lab_reference }}.zip
-        WEB_NODEJS_GIT_REPO: https://github.com/{{ git_repository_lab_path }}/tree/{{ git_repository_lab_reference }}/web-nodejs
-        CATALOG_GO_GIT_REPO: https://github.com/{{ git_repository_lab_path }}/tree/{{ git_repository_lab_reference }}/catalog-go
-        CODEREADY_WORKSPACES_URL: http://codeready-{{ namespace }}.{{ apps_hostname_suffix }}
-        GIT_URL: http://gogs-{{ namespace }}.{{ apps_hostname_suffix }}
-        NEXUS_URL: http://nexus-{{ namespace }}.{{ apps_hostname_suffix }}
-        KIALI_URL: https://kiali-infra{{ project_suffix }}.{{ apps_hostname_suffix }}
-        JAEGER_URL: https://jaeger-query-istio-system.{{ apps_hostname_suffix }}
-        KIBANA_URL: https://kibana.{{ apps_hostname_suffix }}
-    tags: guides
 
   # install openjdk imagestream
   - name: get openjdk image stream
@@ -205,6 +175,11 @@
       - precreate_codeready_users
 
   # Import custom stacks
+  - name: Create Cloud-Native stack
+    command: >
+      oc import-image che-cloud-native:latest
+       -n openshift
+       --from=quay.io/mcouliba/che-cloud-native --confirm
   - name: Import custom stacks
     include: "{{ playbook_dir }}/tasks/add_custom_stack.yml"
     vars:
@@ -222,21 +197,19 @@
     block:
       - name: create istio-operator project
         command: "oc new-project istio-operator"
-        register: res_cmd
-        changed_when: res_cmd.rc == 0
       - name: deploy istio operator
         command: >
-          oc new-app -n istio-operator
-          -f https://raw.githubusercontent.com/Maistra/openshift-ansible/maistra-0.9/istio/istio_product_operator_template.yaml 
-          --param=OPENSHIFT_ISTIO_MASTER_PUBLIC_URL={{ openshift_master_url }}
-        register: res_cmd
-        changed_when: res_cmd.rc == 0
-      - name: deploy istio with Kiali
+          oc apply -n istio-operator 
+          -f https://raw.githubusercontent.com/Maistra/istio-operator/maistra-0.10/deploy/servicemesh-operator.yaml
+      - name: create istio-system project
+        command: "oc new-project istio-system"
+      - name: delete project quota
+        shell: "oc delete limitrange --all -n istio-system"
+        ignore_errors: true
+      - name: deploy istio
         command: >
-          oc create -n istio-operator
-          -f https://raw.githubusercontent.com/Maistra/openshift-ansible/maistra-0.9/istio/istio-installation-kiali.yaml
-        register: res_cmd
-        changed_when: res_cmd.rc == 0
+          oc create -n istio-system 
+          -f https://raw.githubusercontent.com/Maistra/istio-operator/maistra-0.10/deploy/examples/istio_v1alpha3_controlplane_cr_basic.yaml
     when: 
       - istio_system_project_result is failed
       - openshift_service_mesh_installation or preconfigure_service_mesh_projects

@@ -11,7 +11,7 @@ Find an open user login and assign yourself one. Remember it, you will use it
 to login:
 
 {% for user_num in range(1, user_count|int + 1) %}
-user{{ user_num }}=
+You are user{{ user_num }} - http://guides-codeready-infra{{ user_num }}.{{ apps_hostname_suffix }} = <INSERT YOUR NAME>
 {% endfor %}
 
 Parking Lot
