@@ -97,23 +97,28 @@
     tags: jdk
 
   # install CodeReady Workspaces
-  - name: Install Che Plugin Registry
-    command: > 
-      oc new-app -f https://raw.githubusercontent.com/mcouliba/che-plugin-registry/master/openshift/che-plugin-registry.yml \
-      -p IMAGE="quay.io/mcouliba/che-plugin-registry" \
-      -p IMAGE_TAG="latest" \
-      -p PULL_POLICY="IfNotPresent" \
-      -n {{ namespace }}
-  - name: get Che Plugin Registry URL
-    command: "oc get route che-plugin-registry -o 'jsonpath={.spec.host}' -n {{ namespace }}"
-    register: che_plugin_registry_host
-  - import_role:
-      name: openshift_codeready_workspaces
-    vars:
-      project_name: "{{ namespace }}"
-      codeready_plugin_registry_url: "http://{{ che_plugin_registry_host.stdout }}"
-    tags: codeready-workspaces
+  # - name: Install Che Plugin Registry
+  #   command: > 
+  #     oc new-app -f https://raw.githubusercontent.com/mcouliba/che-plugin-registry/master/openshift/che-plugin-registry.yml \
+  #     -p IMAGE="quay.io/mcouliba/che-plugin-registry" \
+  #     -p IMAGE_TAG="latest" \
+  #     -p PULL_POLICY="IfNotPresent" \
+  #     -n {{ namespace }}
+  # - name: get Che Plugin Registry URL
+  #   command: "oc get route che-plugin-registry -o 'jsonpath={.spec.host}' -n {{ namespace }}"
+  #   register: che_plugin_registry_host
+  # - import_role:
+  #     name: openshift_codeready_workspaces
+  #   vars:
+  #     project_name: "{{ namespace }}"
+  #     codeready_plugin_registry_url: "http://{{ che_plugin_registry_host.stdout }}"
+  #   tags: codeready-workspaces
   
+  - name: Deploy CodeReady Workspaces
+    command: "{{ playbook_dir }}/codeready-workspaces-operator-installer/deploy.sh --deploy --project={{ namespace }}" 
+    register: cmd_result
+    changed_when: true
+    
   - name: get CodeReady Workspaces URL
     command: "oc get routes codeready --template={% raw %}'{{ .spec.host }}'{% endraw %} -n {{ namespace }}"
     register: cmd_result
@@ -132,54 +137,54 @@
     set_fact:
       rhsso_url: "{{ cmd_result.stdout }}"
 
-  - name: wait for CodeReady Workspaces to be running
-    uri:
-      url: "http://{{ codeready_url }}/api/system/state"
-      status_code: 200
-    register: result
-    until: result.status == 200
-    retries: 60
-    delay: 30
+  # - name: wait for CodeReady Workspaces to be running
+  #   uri:
+  #     url: "http://{{ codeready_url }}/api/system/state"
+  #     status_code: 200
+  #   register: result
+  #   until: result.status == 200
+  #   retries: 60
+  #   delay: 30
   
-  # Precreate users
-  - name: get auth token from RHSSO master realm
-    uri:
-      url: http://{{ rhsso_url }}/auth/realms/master/protocol/openid-connect/token
-      method: POST
-      body: "username=admin&password=admin&grant_type=password&client_id=admin-cli"
-      status_code: 200
-      headers:
-        Content-Type: "application/x-www-form-urlencoded"
-    register: master_access_token_result
+  # # Precreate users
+  # - name: get auth token from RHSSO master realm
+  #   uri:
+  #     url: http://{{ rhsso_url }}/auth/realms/master/protocol/openid-connect/token
+  #     method: POST
+  #     body: "username=admin&password=admin&grant_type=password&client_id=admin-cli"
+  #     status_code: 200
+  #     headers:
+  #       Content-Type: "application/x-www-form-urlencoded"
+  #   register: master_access_token_result
 
-  - name: init 'master_access_token_bearer' variable
-    set_fact:
-      master_access_token_bearer: "{{ master_access_token_result.json | json_query('access_token') }}"
+  # - name: init 'master_access_token_bearer' variable
+  #   set_fact:
+  #     master_access_token_bearer: "{{ master_access_token_result.json | json_query('access_token') }}"
 
-  - name: pre-create users in RHSSO
-    uri:
-      url: http://{{ rhsso_url }}/auth/admin/realms/codeready/users
-      method: POST
-      body: "{{ lookup('template','{{ playbook_dir }}/templates/codeready-user.json.j2') }}"
-      body_format: json
-      status_code: 201,409
-      headers:
-        Authorization: "Bearer {{ master_access_token_bearer }}"
-        Content-Type: "application/json"
-    vars:
-      username: "{{ 'user%d' | format(item) }}"
-      email: "{{ 'user%d' | format(item) }}@none.com"
-      password: "{{ openshift_user_password }}"
-    loop: "{{ range(1, user_count|int + 1)|list }}"
-    when: 
-      - precreate_codeready_users
+  # - name: pre-create users in RHSSO
+  #   uri:
+  #     url: http://{{ rhsso_url }}/auth/admin/realms/codeready/users
+  #     method: POST
+  #     body: "{{ lookup('template','{{ playbook_dir }}/templates/codeready-user.json.j2') }}"
+  #     body_format: json
+  #     status_code: 201,409
+  #     headers:
+  #       Authorization: "Bearer {{ master_access_token_bearer }}"
+  #       Content-Type: "application/json"
+  #   vars:
+  #     username: "{{ 'user%d' | format(item) }}"
+  #     email: "{{ 'user%d' | format(item) }}@none.com"
+  #     password: "{{ openshift_user_password }}"
+  #   loop: "{{ range(1, user_count|int + 1)|list }}"
+  #   when: 
+  #     - precreate_codeready_users
 
-  # Import custom stacks
-  - name: Create Cloud-Native stack
-    command: >
-      oc import-image che-cloud-native:latest
-       -n openshift
-       --from=quay.io/mcouliba/che-cloud-native --confirm
+  # # Import custom stacks
+  # - name: Create Cloud-Native stack
+  #   command: >
+  #     oc import-image che-cloud-native:latest
+  #      -n openshift
+  #      --from=quay.io/mcouliba/che-cloud-native --confirm
   - name: Import custom stacks
     include: "{{ playbook_dir }}/tasks/add_custom_stack.yml"
     vars:
